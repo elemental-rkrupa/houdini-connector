@@ -1,0 +1,140 @@
+omni_initialize
+
+    Initialize the Client library.  Note:  this command typically should not be called directly by the user.
+
+    USAGES
+      omni_initialize
+
+omni_shutdown
+
+    Shut down the Client library.  It's not safe to call any Omniverse client functions (not even omni_initialize) after calling this.
+
+    USAGES
+      omni_shutdown
+
+
+omni_list_connections
+
+    Prints the URLs of the currently connected Omniverse servers.
+
+    USAGES
+      list_connections
+
+omni_list_contents
+
+    Prints the contents of the given Omniverse URL.
+
+    USAGES
+      omni_list_contents <omni_url>
+      omni_list_contents [-v] [-t (int 0-5)] [-e] [-r] <omni_url>
+
+    OPTIONS
+
+        -e
+            Print errors to the hscript shell.
+
+        -v
+            List verbose information, including file type, size and version.
+
+    EXAMPLES
+
+      > omni_list -v omniverse://servername/Users/myname/
+
+    RELATED
+
+      * omni_list_connections
+
+      * omni_cache_dir
+
+      * omni_download
+
+      * omni_upload
+
+
+omni_cache_dir
+
+    Print the path to the Omniverse cache directory on the local machine.  The plugin might save temporary files to this location.
+
+    USAGES
+      omni_cache_dir
+
+
+omni_delete
+
+    Delete the file at the given url from the server.
+
+    USAGES
+      omni_delete <omni_url>
+
+    EXAMPLES
+
+      > omni_delete omniverse://servername/path/to/file.png
+
+
+omni_download
+
+    Download the file at the given Omniverse URL to the cache directory on the local machine (typically %HOME%/.omniverse/Houdini/cache/<server>/).
+
+    USAGES
+      omni_dowmnload <omni_url>
+
+    OPTIONS
+
+        -v
+            List verbose information, including the cache path and version of the downloaded file.
+
+    EXAMPLES
+
+      > omni_download omniverse://servername/Users/myname/eroded.png
+
+
+omni_server_path
+
+    Returns the Omniverse relative server path corresponding to a given Omniverse uri path.  If the give path is not an Omniverse uri, the command returns nothing.
+
+    USAGES
+      omni_server_path <omni_uri>
+
+    EXAMPLES
+
+      > omni_server_path omniverse://servername/Users/myname/eroded.png
+        Output: "/Users/myname/eroded.png"
+
+      > omni_server_path O:/Users/myname/eroded.png
+        Outputs nothing.
+
+omni_upload
+
+    Upload the given file from the cache on the local machine (typically %HOME%/.omniverse/Houdini/cache/<server>/) to the server.
+
+    USAGES
+      omni_upload <omni_url>
+
+    EXAMPLES
+
+      > omni_upload omniverse://servername/path/to/file.png
+
+
+omni_usd_live_process
+
+    Process live updates received from the server.
+
+    USAGES
+      omni_usd_live_process
+
+    EXAMPLES
+
+      > omni_usd_live_process
+
+
+omni_add_bookmark
+
+     Create an absolute omniverse path prefix, containing the given server name, in Houdini's file browser.
+
+    USAGES
+      omni_add_bookmark <omni_host_name>
+
+    EXAMPLES
+
+      > omni_add_bookmark servername
+        Creates the prefix 'omniverse://servername' in the file browser.

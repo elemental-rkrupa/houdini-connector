@@ -1,0 +1,57 @@
+= HDA Converter =
+#type: node
+#context: obj
+#internal: object_omni_hdaConverter
+#icon: DESKTOP/expanded_otl
+#group: attrs
+#since: 19.0
+
+"""Convert binary HDA files to folders / convert folders to binary HDA files"""
+
+== Overview ==
+
+This tool allow you to easily expand .hda files to folders using the hotl.exe utility. It was originally authored to make .hda files into a git friendly text format so that we can diff our Houdini Digital Asset changes.
+
+Because of this purpose the expand is using the best argument (-t) for the purpose of storing files on Git - you can read about the argument in the [Houdini documention of hotl|https://www.sidefx.com/docs/houdini/ref/utils/hotl.html].
+
+You can safely have both the expanded folder and .hda binary file in your otl folder - Houdini will choose the .hda file.
+To update your hda files from the folder, run the Contract operation. The .hda file will be overwritten and thus updated from your folder.
+
+@parameters
+== Settings ==
+
+HDA Operation:			
+	#id: hda_operation
+	*Expand* - Convert .hda files into a folder with text files. The -t flag is used: Expand the metadata and sections for each asset into separate subdirectories, and expands the node definition files into a Contents.dir subdirectory. 
+	Saves binary sections of the node definition into a single MIME-encoded Contents.mime file.
+	
+	*Contract* - Convert folder to .hda file. The -l flag is the counterpart (to -t) for this operation.
+Mode:
+	#id: mode
+	*Directory* - When expanding, this expands all .hda files in the given directory. When contracting, this contracts all the directories in the given directory.
+	
+	*HDA* - When expanding, expands specific .hda file. When contracting, contracts specific directory.
+Directory:
+	#id: hda_directory
+	Visible in *Directory Mode*. 
+	
+	*Expands* all .hda files found in directory and *Contracts* all directories found in directory.
+HDA File:
+	#id: hda_file
+	Visible in *HDA Mode* for *Expand Operation*. 
+	
+	*Expands* choosen .hda file
+HDA Directory:
+	#id: hda_file_directory
+	Visible in *HDA Mode* for *Contract Operation*. 
+	
+	*Contracts* choosen directory
+	
+== Button Commands ==
+	
+Expand:
+	#id: expand_button
+	Execute expand
+Contract:
+	#id: contract_button
+	Execute contract

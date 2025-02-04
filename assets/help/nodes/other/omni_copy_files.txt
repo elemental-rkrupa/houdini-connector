@@ -1,0 +1,24 @@
+= Copy Files =
+#type: node
+#context: lop
+#internal: omni_copy_files
+#icon: TOP/filecopy
+#group: attrs
+#since: 19.0
+
+"""Copy file utility that allows you to easily shuttle files to and from a Nucleus server."""
+
+== Overview ==
+
+Brings up dialog that allows you to select any number of files to copy, followed by a directory to copy to.
+To read more about Houdini in Omniverse go to the [Houdini Omniverse documentation|https://docs.omniverse.nvidia.com/con_connect/con_connect/houdini.html].
+
+
+== Tips ==
+
+* Since we do not yet support HDA's to be saved and loaded to and from Omniverse Nucleus servers, now you can share your HDA's and people can easily copy them from the shared location into local directories off server.
+
+
+
+
+

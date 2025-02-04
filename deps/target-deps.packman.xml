@@ -1,0 +1,36 @@
+<project toolsVersion="5.0">
+
+    <!-- External Devs should replace "path" to their local Houdini USD path -->
+    <!--
+    <dependency name="usd" linkPath="../_build/target-deps/usd/${config}"> 
+        <source path="C:\path\to\houdini_usd\containing\include\and\lib\folders"/> 
+    </dependency>
+    -->
+
+    <!-- External Devs should replace "path" to their local Houdini HDK path -->
+    <!--  
+    <dependency name="houdini_hdk" linkPath="../_build/target-deps/houdini_hdk"> 
+        <source path="C:\path\to\houdini_hdk\containing\dsolib\python311\and\toolkit\folders"/> 
+    </dependency>
+    -->
+
+  <dependency name="omni_usd_resolver" linkPath="../_build/target-deps/omni_usd_resolver">
+    <package name="omni_usd_resolver.${usd_flavor}.${pyver}.${platform}" version="1.42.8" />
+  </dependency>
+
+  <dependency name="carb_sdk_plugins" linkPath="../_build/target-deps/carb_sdk_plugins">
+    <package name="carb_sdk+plugins.${platform}" version="167.9+167.6291.2cd1b32e.gl" />
+ </dependency>
+
+  <dependency name="omni_client_library" linkPath="../_build/target-deps/omni_client_library" >
+    <package name="omni_client_library.${platform}" version="2.53.2" />
+  </dependency>
+
+  <dependency name="omni.asset_validator" linkPath="../_build/target-deps/omni_asset_validator">
+    <package name="omni.asset_validator" version="0.13.3+v0133.1657.72a7a38a.gl.${platform}" />
+  </dependency>
+  
+  <dependency name="pybind11" linkPath="../_build/target-deps/pybind11">
+    <package name="pybind11" version="2.11.1-0" />
+  </dependency>
+</project>

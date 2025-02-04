@@ -1,0 +1,6 @@
+<project toolsVersion="5.0">
+  <dependency name="cmake" linkPath="../_build/host-deps/cmake">
+    <package name="cmake-${platform}" version="3.25.1" platforms="windows-x86_64 linux-x86_64"/>
+  </dependency>
+
+</project>

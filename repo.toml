@@ -1,0 +1,134 @@
+[repo_build]
+
+vscode.python_env.PYTHONPATH= [
+  "$$$${PYTHONPATH}",
+  "${env:PYTHONPATH}",
+  "$root/_build/pip-packages",
+  "$repo_deps/repo_man",
+  "$repo_deps/repo_build",
+  "$repo_deps/repo_format",
+  "$repo_deps/repo_package",
+  "$root/tools/repoman",
+]
+
+docker.enabled = false
+
+fetch.packman_target_files_to_pull = [
+    "${root}/deps/target-deps.packman.xml",
+]
+
+########################################################################################################################
+# Formatting
+########################################################################################################################
+[repo_format]
+python.files.exclude = [
+    "_build/*",
+    "_compiler/*",
+    "_conan/*",
+    "_deps/*",
+    "_repo/*",
+    "_staging/*",
+    "tools/*",
+]
+python.files.include = [
+    "python/**",
+    "python/**",
+    "Tests/**",
+    "assets/**",
+    "assets19.0/**",
+    "assets19.5/**",
+]
+
+[repo_format.cpp]
+files.include = [
+    "FS_Omni/**",
+    "HoudiniOmni/**",
+    "HoudiniOmniPy/**",
+    "OP_Omni/**",
+]
+files.exclude = []
+files.extensions = [".h", ".inl", ".cpp", ".c", ".py"]
+
+
+########################################################################################################################
+# Packaging
+########################################################################################################################
+[repo]
+name = "houdini-connector"
+logging = "warn"
+
+telemetry.enabled = false
+
+[repo_build.msbuild]
+sln_file = "houdini-connector.sln"
+
+# If set to true will attempt to link to host's Visual Studio and Windows SDK installations.
+# This is needed if C++ compilation is needed on Windows, and repo_build.build.enabled is set to true.
+link_host_toolchain = true
+
+# Filter on Visual Studio version e.g.: Visual Studio 2022
+vs_version = "vs2019"
+"token:in_ci==true".vs_version = "vs2019"
+
+
+# Visual Studio path; This will be used if the user would like to point to a specific VS installation rather than rely on heuristic locating.
+# vs_path = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\"
+"token:in_ci==true".vs_path = "C:\\vs2019"
+
+[repo_package]
+
+[repo_package.packages.houdini-connector-launcher]
+omniverse_flow_version_scheme = true
+ziponly = true
+package_per_config = false
+strip_package_infos = true
+
+[repo_package.packages.omni_houdini_native_setup]
+omniverse_flow_version_scheme = true
+ziponly = true
+package_per_config = false
+strip_package_infos = true
+
+# `${test_root}` token when running locally. When running from package it becomes root of the unpacked package.
+test_root = "${root}"
+
+# 'glob_and_exec':
+[repo_test.suites.he_hdas]
+kind = "glob_and_exec"
+# # Path to glob in, relative to the root (root can also be package root if running from package).
+# # ${test_root} can be used to indicate root of the test run, which can be different from repo root if running tests in a package.
+path = "${test_root}"
+# # [[group]] allows to specify multiple test groups with various settings. If there are no group just assume root=group.
+# # So the line below can be removed if there is only 1 group.
+  [[repo_test.suites.he_hdas.group]]
+  # Files to glob (include and exclude) and run with args:
+  include = ["run_tests_he${shell_ext}"]
+
+
+# "pytest"
+[repo_test.suites.pytests]
+kind = "pytest"
+log_file = "results.xml"
+discover_path = "${root}/Tests/pytests/"
+
+# licensing
+licensing.enabled = false
+licensing.packages = [
+    "${root}/deps/target-deps.packman.xml",
+]
+licensing.fail_on_missing = true
+
+
+
+
+########################################################################################################################
+# CI commands
+########################################################################################################################
+
+[repo_ci.jobs.stage_for_github]
+script = "${config_root}/tools/ci/github-stage-ci.py"
+
+#----------------------------------------------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------------------------------------------------#
+#----------------------------------------------------------------------------------------------------------------------#
+# AUTOREMOVE: END

@@ -1,0 +1,33 @@
+= Omniverse USD ROP =
+#type: node
+#context: lop
+#internal: omni_usd_rop
+#icon: COMMON/usd
+#group: attrs
+#since: 19.0
+
+"""Creates a USD output ROP and applies the Omniverse node preset to it."""
+
+== Overview ==
+
+The Omniverse node preset adds the ability to save textures on USD export.
+
+This output processor can automatically save textures in a materials/textures folder next to the USD file that references these assets. In addition, the texture asset in the USD will be specified as a relative path (e.g., ./materials/textures/diffuse.png). 
+Texture export will work for texture files on disk as well as textures embedded in HDAs in the hip file (i.e., textures with paths beginning with opdef:). 
+
+To read more about Houdini in Omniverse go to the [Houdini Omniverse documentation|https://docs.omniverse.nvidia.com/con_connect/con_connect/houdini.html].
+
+@parameters
+			
+Omniverse Texture Options:
+		Enable:
+			Enable/Disable texture writing
+		Overwrite Existing Files:
+			Overwrite textures when they exist in the destination.
+		Verbose Output:
+			Increased amount of information in the log and console.
+
+
+@related
+
+::[Node:lop/omni_set_legacy_light_properties]

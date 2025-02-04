@@ -1,0 +1,171 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<shelfDocument>
+  <!-- This file contains definitions of shelves, toolbars, and tools.
+ It should not be hand-edited when it is being used by the application.
+ Note, that two definitions of the same element are not allowed in
+ a single file. -->
+
+  <toolshelf name="omni" label="Omniverse">
+    <memberTool name="omni_usd_rop"/>
+    <memberTool name="omni_save"/>
+    <memberTool name="omni_copy_files"/>
+    <memberTool name="omni_set_legacy_light_properties"/>
+    <memberTool name="omni_scale_light_intensities"/>
+  </toolshelf>
+
+  <tool name="omni_usd_rop" label="Omniverse USD ROP" icon="opdef:/Lop/omni_editmdl?IconImage">
+    <helpURL>operator:Lop/omni_usd_rop</helpURL>
+    <toolMenuContext name="network">
+      <contextNetType>ROP</contextNetType>
+      <contextNetType>LOP</contextNetType>
+    </toolMenuContext>
+    <toolSubmenu>Omniverse</toolSubmenu>
+    <script scriptType="python"><![CDATA[import os
+
+import hou
+from homni import logging
+
+LOGGER = logging.get_homni_logger()
+
+OUT_MANAGER_TYPE = hou.nodeType(hou.managerNodeTypeCategory(), "out")
+
+def find_network_panetab():
+    for panetab in hou.ui.paneTabs():
+        if not panetab.isCurrentTab():
+            continue
+        if isinstance(panetab, hou.NetworkEditor) and (isinstance(panetab.pwd(), (hou.LopNetwork, hou.LopNode, hou.RopNode)) or panetab.pwd().type() == OUT_MANAGER_TYPE):
+            return panetab
+
+
+def prompt_msg(msg):
+    LOGGER.info(msg)
+    hou.ui.displayMessage(msg)
+
+
+def main():
+    # Only works in UI mode
+    if not hou.isUIAvailable():
+        msg = "omni_usd_rop shelf tool only available in Houdini graphic mode."
+        LOGGER.warning(msg)
+        return
+
+    # Get network pane
+    panetab = kwargs.get("pane") or hou.ui.findPaneTab(kwargs.get("panename", "")) or find_network_panetab()
+    if not isinstance(panetab, hou.NetworkEditor):
+        msg = "Unable to create Omniverse USD ROP. Failed to find active network editor pane."
+        prompt_msg(msg)
+        return
+
+    if not isinstance(panetab.pwd(), (hou.LopNetwork, hou.LopNode, hou.RopNode)) and not panetab.pwd().type() == OUT_MANAGER_TYPE:
+        msg = "Unable to create Omniverse USD ROP. Failed to find active LOP/ROP network editor pane."
+        prompt_msg(msg)
+        return
+
+    # PaneTab current node.
+    node = panetab.pwd()
+
+    # Input
+    inputs = kwargs.get("inputs")
+    inputitem, outputindex = inputs[0] if inputs and isinstance(inputs, list) else (None, -1)
+    # make sure inputitem is an item exists in the context.
+    inputitem = node.item(inputitem) if inputitem else None
+
+    # Output
+    outputs = kwargs.get("outputs")
+    outputitem, inputindex = outputs[0] if outputs and isinstance(outputs, list) else (None, -1)
+    # make sure outputitem is an item exists in the context.
+    outputitem = node.item(outputitem) if outputitem else None
+
+
+    # Autoplace
+    autoplace = kwargs.get("autoplace", not hou.isUIAvailable())
+
+    # Append to the current node while shift-clicked
+    # This should always return false while doing tab menu.
+    if kwargs.get("shiftclick") and inputitem is None and panetab.currentNode().outputConnectors():
+        inputitem = panetab.currentNode()
+        outputindex = 0
+
+    # Pos
+    if autoplace or panetab.listMode():
+        pos = panetab.cursorPosition()
+        adjust_pos = True
+    else:
+        adjust_pos = False
+        pos = panetab.selectPosition(inputitem, outputindex, outputitem, inputindex)
+
+    if adjust_pos:
+        pos -= node.size()/2
+
+    # Create LOP node
+    if isinstance(node, (hou.LopNetwork, hou.LopNode)):
+        rop_node = node.createNode("usd_rop", node_name="omni_usd_out")
+    # Create ROP node
+    elif isinstance(node, hou.RopNode) or node.type() == OUT_MANAGER_TYPE:
+        rop_node = node.createNode("usd", node_name="omni_usd")
+    else:
+        msg = f"Unable to create USD ROP node. Unknown current context - {node.path()} ({node.type()})"
+        prompt_msg(msg)
+        return
+
+    rop_node.setSelected(True, clear_all_selected=True)
+
+    # Apply preset
+    preset_name = "Omniverse"
+    out, err = hou.hscript(f"oppresetload {rop_node.path()} {preset_name}")
+    if err:
+        msg = f'Unable to load preset "{preset_name}" for node "{rop_node.path()}"'
+        prompt_msg(msg)
+        rop_node.destroy()
+        return
+
+    # Set Nvidia color
+    rop_node.setColor(hou.Color(.46, .72, 0))
+
+    # Move to good position
+    rop_node.move(pos)
+
+    # Find if we need to auto connect based on the dropped pos. This is tricky since it's based on the screen bbox
+    if not inputitem:
+        wires = [i for i in panetab.networkItemsInBox(panetab.posToScreen(pos+(node.size()*.4)), panetab.posToScreen(pos+(node.size()*.5))) if i[1]=="wire"]
+        if wires:
+            inputitem = wires[0][0].inputItem()
+            outputindex = wires[0][0].inputItemOutputIndex()
+
+    # Connect input
+    if inputitem:
+        rop_node.setInput(outputindex, inputitem)
+
+main()]]></script>
+  </tool>
+
+  <tool name="omni_save" label="Save Hip" icon="hicon:/SVGIcons.index?ENGINE_open_in_houdini.svg">
+    <helpURL>operator:Other/omni_save</helpURL>
+    <script scriptType="python"><![CDATA[import importlib
+import homni.utils
+homni.utils.save_helper()]]></script>
+  </tool>
+
+  <tool name="omni_copy_files" label="Copy Files" icon="hicon:/SVGIcons.index?TOP_filecopy.svg">
+    <helpURL>operator:Other/omni_copy_files</helpURL>
+    <script scriptType="python"><![CDATA[import importlib
+import homni.utils
+homni.utils.file_copy_helper()]]></script>
+  </tool>
+
+  <tool name="omni_set_legacy_light_properties" label="Legacy Light Properties" icon="LOP_copyproperty">
+    <helpURL>operator:Lop/omni_set_legacy_light_properties</helpURL>
+    <toolSubmenu>Omniverse</toolSubmenu>
+    <script scriptType="python"><![CDATA[#import importlib
+import homni.utils
+homni.utils.legacy_light_properties(kwargs)]]></script>
+  </tool>
+
+  <tool name="omni_scale_light_intensities" label="Scale Light Intensities" icon="LOP_editproperties">
+    <helpURL>operator:Lop/omni_scale_light_intensities</helpURL>
+    <toolSubmenu>Omniverse</toolSubmenu>
+    <script scriptType="python"><![CDATA[#import importlib
+import homni.utils
+homni.utils.scale_light_intensities(kwargs)]]></script>
+  </tool>
+</shelfDocument>

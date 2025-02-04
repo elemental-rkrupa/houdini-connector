@@ -1,0 +1,61 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<!-- Add a new submenu for the Omniverse connection and settings into the main menu before help. -->
+<mainMenu>
+<menuBar>
+<subMenu id="omni_menu">
+
+	<label>Omniverse</label>
+
+	<insertBefore>help_menu</insertBefore>
+
+	<scriptItem id="h.omni_save">
+	  	<label>Save Hip</label>
+		<scriptCode><![CDATA[import importlib, homni.utils; homni.utils.save_helper()]]></scriptCode>
+	</scriptItem>
+
+	<scriptItem id="h.omni_copy_files">
+		<label>Copy Files</label>
+		<scriptCode><![CDATA[import importlib, homni.utils; homni.utils.file_copy_helper()]]></scriptCode>
+	</scriptItem>
+
+	<separatorItem />
+
+	<scriptItem id="h.omni_connect">
+	  	<label>Connections</label>
+		<scriptCode><![CDATA[import homni.ui.dialogs; homni.ui.dialogs.showConnectDialog()]]></scriptCode>
+	</scriptItem>
+	<scriptItem id="h.omni_panel">
+	  	<label>Omniverse Panel</label>
+	  	<scriptPath>menu_omni_panel.py</scriptPath>
+	</scriptItem>
+	<scriptItem id="h.omni_asset_validator">
+		<label>Omniverse Asset Validator Panel</label>
+		<scriptCode><![CDATA[import toolutils;kwargs['pane']=None;toolutils.createOrShowPythonPanel(kwargs, 'omni_asset_validator', 'Omniverse', 5)]]></scriptCode>
+  </scriptItem>
+
+	<separatorItem />
+
+	<scriptItem id="h.omni_quickstart">
+		<label>Quick Start</label>
+		<scriptCode><![CDATA[__import__('webbrowser').open('https://docs.omniverse.nvidia.com/con_connect/con_connect/houdini.html#houdini-quick-start')]]></scriptCode>
+	</scriptItem>
+
+	<scriptItem id="h.omni_onlinedocs">
+		<label>Online Documentaion</label>
+		<scriptCode><![CDATA[__import__('webbrowser').open('https://docs.omniverse.nvidia.com/con_connect/con_connect/houdini.html')]]></scriptCode>
+	</scriptItem>
+
+	<scriptItem id="h.omni_forums">
+		<label>User Forums</label>
+		<scriptCode><![CDATA[__import__('webbrowser').open('https://forums.developer.nvidia.com/c/omniverse/connectors/houdini/')]]></scriptCode>
+	</scriptItem>
+
+	<scriptItem id="h.omni_helpdesk">
+		<label>Report an Issue</label>
+		<scriptCode><![CDATA[__import__('webbrowser').open('https://nvidia-omniverse.atlassian.net/servicedesk/customer/portal/4/group/5/create/28/')]]></scriptCode>
+	</scriptItem>
+
+</subMenu>
+</menuBar>
+</mainMenu>

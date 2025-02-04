@@ -1,0 +1,2 @@
+*.hda filter=lfs diff=lfs merge=lfs -text
+*.mime filter=lfs diff=lfs merge=lfs -text

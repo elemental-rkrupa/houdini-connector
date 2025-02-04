@@ -1,0 +1,58 @@
+= Legacy Light Properties =
+#type: node
+#context: lop
+#internal: omni_set_legacy_light_properties
+#icon: VOP/copy
+#group: attrs
+#since: 19.0
+
+"""Sets up light properties to be compatible with USD light properties in Omniverse."""
+
+== Overview ==
+
+Creates a Copy property node and applies a node preset to it. The preset sets up light properties to be compatible with USD light properties in Omniverse.
+
+Documentation below pertains directly to the Copy Property node. 
+
+To read more about Houdini in Omniverse go to the [Houdini Omniverse documentation|https://docs.omniverse.nvidia.com/con_connect/con_connect/houdini.html].
+
+
+== Tips ==
+
+* When copying attribute values, the default value and all time sampled values will be copied as well.
+
+* Source property can be "blocked", which clears all values and is as close as USD comes to supporting the "deletion" of an property.
+
+@parameters
+
+:include _primpattern:
+
+Destination Primitives:
+        If this parameter is not enabled, each source primitive is used as its one and only destination primitive. Enabling this parameter causes the resulting primitive pattern to be evaluated for each source primitive, with the following local variables available to generate different destination patterns for each source primitive:
+
+        `@numprim` (`$NPRIM` is deprecated):
+            The total number of primitives being modified by this node.
+        `@prim` (`$PRIM` is deprecated):
+            Index of the primitive being modified. This value
+            goes from `0` to `@numprim-1`.
+        `@primpath` (`$PRIMPATH` is deprecated):
+            The path of the primitive being modified.
+
+Number of Properties to Copy:
+	Controls the number of properties that should be copied for each destination primitive for each source primitive.
+
+Source Property:
+	The name of the property that should be copied. If the source property doesn't exist on a particular source primitive, that primitive is silently ignored.
+
+Destination Property:
+	The name of the property that should be created on the destination primitives by the copy operation.
+
+Copy Metadata:
+        Enable this parameter to copy all metadata from the source property to the destination. This option should normally be left off, which will cause the destination property to be marked as "custom" unless the destination property is defined in a schema.
+
+Block Source:
+        Enable this parameter to block the source properties after copying them, clearing all values. This is as close as USD allows to "deleting" a property. Properties defined in a schema will revert to their fallback values authored in the schema.
+
+@related
+
+::[Node:lop/omni_usd_rop]

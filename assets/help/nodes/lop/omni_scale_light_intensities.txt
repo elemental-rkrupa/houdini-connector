@@ -1,0 +1,22 @@
+= Scale Light Intensities =
+#type: node
+#context: lop
+#internal: omni_set_legacy_light_properties
+#icon:  LOP/editproperties
+#group: attrs
+#since: 19.0
+
+"""Create an Edit Properties LOP node for scaling light intensity properties."""
+
+== Overview ==
+
+Creates an [Edit Properties|Node:lop/editproperties] node and applies a preset to it. The preset configures the node to scale the `inputs:intensity property` by a given amount, which can be used to adjust for brightness differences between renderers in Solaris and Omniverse.
+
+Please see the help for the [Edit Properties|Node:lop/editproperties] node for additional information.
+
+To read more about Houdini in Omniverse go to the [Houdini Omniverse documentation|https://docs.omniverse.nvidia.com/con_connect/con_connect/houdini.html].
+
+@related
+
+::[Node:lop/omni_set_legacy_light_properties]
+::[Node:lop/omni_usd_rop]

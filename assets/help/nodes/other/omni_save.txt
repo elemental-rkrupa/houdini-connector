@@ -1,0 +1,24 @@
+= Save Hip =
+#type: node
+#context: any
+#internal: omni_save
+#icon: ENGINE/open_in_houdini
+#group: attrs
+#since: 19.0
+
+"""Copy file utility that allows you to easily shuttle files to and from a Nucleus server."""
+
+== Overview ==
+
+Save utility that re-creates the Houdini behavior when Make Numbered Backups is enabled in the preferences. Note that backups are in addition to checkpoints that are automatically provided when saving to a Nucleus server that supports them.
+To read more about Houdini in Omniverse go to the [Houdini Omniverse documentation|https://docs.omniverse.nvidia.com/con_connect/con_connect/houdini.html].
+
+
+== Tips ==
+
+* For versioning of your hip file, you’ll get Nucleus checkpoints when working with hip files on Omniverse Nucleus servers with the checkpoint feature turned on.
+
+
+
+
+
