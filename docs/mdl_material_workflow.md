@@ -18,7 +18,7 @@ When building an **MDL shader** within a **Subnet VOP**, it is required to promo
 
 ### 1. Promote all parameters from the MDL shader to the subnet
 1. Select the **subnet**.
-2. Click the **gear icon** (:gear:) on the Parameter Pane.
+2. Click the **gear icon** on the Parameter Pane.
 3. Select **Edit Parameter Interface**.
 
 ![Subnet Selection and Gear Icon](./images/edit_node_properties.png)
@@ -26,10 +26,9 @@ When building an **MDL shader** within a **Subnet VOP**, it is required to promo
 ---
 
 ### 2. In the "Edit Parameter Interface" Dialog
-1. Select the **From Nodes** tab.
-2. Expand the subnet node you are editing.
-3. Select the **MDL shader node** inside the subnet.
-4. Click the **:arrow_right:** icon to promote all parameters from the MDL shader to the subnet node.
+1. Select the **From Nodes** tab. Expand the subnet node you are editing.
+2. Select the **MDL shader node** inside the subnet.
+3. Click the **:arrow_right:** icon to promote all parameters from the MDL shader to the subnet node.
 
 ![Promote Parameters from MDL Shader](./images/edit_parameter_interface.png)
 
@@ -48,8 +47,7 @@ Finally, Click **Apply** to accept the changes and close the dialog.
 ---
 
 ### 4. Configure the Subnet node
-1. Select the **Subnet** node.  
-   You should now see it has many parameters, all linked to the MDL shader node inside.
+1. Select the **Subnet** node. You should now see it has many parameters, all linked to the MDL shader node inside.
 2. Go to the **Shader** tab.
 3. Type `MDL` in the **Render Mask** parameter.
 

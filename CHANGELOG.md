@@ -1,5 +1,12 @@
 Houdini Omniverse Connector Changelog
 =====================================
+200.1.1
+---------------
+
+* Changes
+    *  Update mdl shadertranslators to support Omni MDL VOPs within a subnet.
+    *  Add docs/mdl_material_workflow.md
+
 200.1.0
 ---------------
 
