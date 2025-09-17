@@ -162,7 +162,7 @@ class MdlShaderTranslator(TranslatorBase):
     # which, in turn, is invoked from the inner loop of HUSD_CreateMaterial::createMaterial()
     # in the same file.
     def createMaterialShader(self, usd_stage, usd_material_path, usd_time_code, shader_node, shader_type, output_name):
-        if output_name != "out":
+        if output_name not in ["out", "surface"]:
             return
 
         helper = MdlShaderTranslatorHelper(self.translatorID(), usd_stage, usd_material_path, usd_time_code)
