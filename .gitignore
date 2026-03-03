@@ -1,0 +1,11 @@
+# Build artifacts
+_build/
+_compiler/
+_repo/
+_staging/
+
+# Claude Code local memory
+.claude/
+
+# IDE workspace
+omniverse-connectors.code-workspace
