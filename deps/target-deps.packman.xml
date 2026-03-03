@@ -3,7 +3,7 @@
     <!-- External Devs should replace "path" to their local Houdini USD path -->
     <!--
     <dependency name="usd" linkPath="../_build/target-deps/usd/${config}"> 
-        <source path="C:\path\to\houdini_usd\containing\include\and\lib\folders"/> 
+        <source path="C:\path\to\houdini_usd\containing\include\and\lib\folders"/>       
     </dependency>
     -->
 
@@ -13,6 +13,20 @@
         <source path="C:\path\to\houdini_hdk\containing\dsolib\python311\and\toolkit\folders"/> 
     </dependency>
     -->
+
+    <!-- External Devs should replace "path" to their local Houdini USD path -->
+ 
+  <dependency name="usd" linkPath="../_build/target-deps/usd/${config}">  
+      <source path="C:\tmp\omniverse-connector\houdini_usd" /> 
+  </dependency>
+
+
+    <!-- External Devs should replace "path" to their local Houdini HDK path -->
+
+  <dependency name="houdini_hdk" linkPath="../_build/target-deps/houdini_hdk"> 
+      <source path="C:\tmp\omniverse-connector\houdini_hdk" /> 
+  </dependency>
+
 
   <dependency name="omni_usd_resolver" linkPath="../_build/target-deps/omni_usd_resolver">
     <package name="omni_usd_resolver.${usd_flavor}.${pyver}.${platform}" version="1.42.8" />

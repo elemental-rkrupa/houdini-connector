@@ -24,7 +24,7 @@ from functools import partial
 
 import hou
 import omni.client
-from PySide2 import QtCore
+from PySide6 import QtCore
 
 LOGGER = None
 

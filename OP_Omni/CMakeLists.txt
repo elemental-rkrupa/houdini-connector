@@ -20,19 +20,21 @@ add_library( ${library_name} SHARED
 # compile definitions.
 if (WIN32)
     target_link_libraries( ${library_name}
-        Houdini
-        HoudiniOmni
-        ${HOUDINI_DIR}/custom/houdini/dsolib/hboost_python${PY_VER_INT}-mt-x64.lib
-        ${PYTHON_LIBS_DIR}/python${PY_VER_INT}.lib
-        ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_gf.lib
-        ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_sdf.lib
-        ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_tf.lib
-        ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_usd.lib
-        ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_usdGeom.lib
-        ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_usdUtils.lib
-        ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_vt.lib
-        ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_arch.lib
-    )
+            Houdini
+            HoudiniOmni
+            ${HOUDINI_DIR}/custom/houdini/dsolib/hboost_python${PY_VER_INT}-mt-x64.lib
+            ${PYTHON_LIBS_DIR}/python${PY_VER_INT}.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_python.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_boost.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_gf.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_sdf.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_tf.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_usd.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_usdGeom.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_usdUtils.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_vt.lib
+            ${HOUDINI_DIR}/custom/houdini/dsolib/libpxr_arch.lib
+        )
 else ()
     target_link_libraries( ${library_name}
         Houdini

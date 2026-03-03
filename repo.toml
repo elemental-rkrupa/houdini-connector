@@ -67,13 +67,13 @@ sln_file = "houdini-connector.sln"
 link_host_toolchain = true
 
 # Filter on Visual Studio version e.g.: Visual Studio 2022
-vs_version = "vs2019"
-"token:in_ci==true".vs_version = "vs2019"
+vs_version = "vs2022"
+"token:in_ci==true".vs_version = "vs2022"
 
 
 # Visual Studio path; This will be used if the user would like to point to a specific VS installation rather than rely on heuristic locating.
 # vs_path = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\"
-"token:in_ci==true".vs_path = "C:\\vs2019"
+"token:in_ci==true".vs_path = "C:\\Program Files\\Microsoft Visual Studio\\2022\\Community\\"
 
 [repo_package]
 

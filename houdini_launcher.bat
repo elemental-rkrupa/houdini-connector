@@ -8,7 +8,7 @@ pushd %~dp0
 :: We don't want the user custom settings to override the OMNI_*
 :: and other environment variables we must define below,
 :: so don't load houdini.env.
-set HOUDINI_NO_ENV_FILE=1
+:: set HOUDINI_NO_ENV_FILE=1
 
 set CLIENT_LIB_CONFIG=release
 
@@ -26,10 +26,12 @@ set CARB_APP_PATH=%OMNI_ROOT%
 set HOUDINI_PATH=%HOMNI%\houdini;%OMNI_ROOT%;^&
 set PYTHONPATH=%OMNI_ROOT%\python;%OMNI_ROOT%\carb_sdk_plugins\bindings-python;%OMNI_ROOT%\omni_usd_resolver\bindings-python;%OMNI_ROOT%\omni_client_library\bindings-python;%PYTHONPATH%
 set HOUDINI_USD_DSO_PATH=%OMNI_ROOT%\omni_usd_resolver\usd\omniverse\resolver\resources;%HOUDINI_USD_DSO_PATH%;^&
-set PATH=%OMNI_ROOT%\lib;%OMNI_ROOT%\omni_usd_resolver;%OMNI_ROOT%\omni_client_library;%PATH%
+:: set PATH=%OMNI_ROOT%\lib;%OMNI_ROOT%\omni_usd_resolver;%OMNI_ROOT%\omni_client_library;%PATH%
+set PATH=%OMNI_ROOT%\lib;%OMNI_ROOT%\omni_usd_resolver;%OMNI_ROOT%\omni_client_library;%HOUDINI_BIN%;%PATH%
 
 set HOMNI_ENABLE_EXPERIMENTAL=1
-set HOMNI_DEFAULT_CONNECTIONS=localhost
+:: set HOMNI_DEFAULT_CONNECTIONS=localhost
+set HOMNI_DEFAULT_CONNECTIONS=
 set HOMNI_ENABLE_LOGFILE=1
 
 set HOUDINI_DSO_ERROR=2

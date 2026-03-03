@@ -12,9 +12,9 @@ import pathlib
 
 import hou
 from homni import client, logging
-from PySide2 import QtCore, QtUiTools, QtWidgets
-from PySide2.QtCore import *
-from PySide2.QtWidgets import *
+from PySide6 import QtCore, QtUiTools, QtWidgets
+from PySide6.QtCore import *
+from PySide6.QtWidgets import *
 
 LOGGER = logging.get_homni_logger()
 

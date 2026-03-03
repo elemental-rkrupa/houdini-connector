@@ -21,7 +21,7 @@ from homni import client
 from homni import logging as hlogging
 from homni.client import LogLevel
 from homni.ui import dialogs
-from PySide2 import QtCore, QtWidgets
+from PySide6 import QtCore, QtWidgets
 
 LOGGER = hlogging.get_homni_logger()
 

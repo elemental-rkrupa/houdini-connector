@@ -16,7 +16,8 @@ goto :init
 
 :init
     set "CONFIG=release"
-    set "HOUDINI_FULL_VER=20.5.332"
+    @REM set "HOUDINI_FULL_VER=20.5.332"
+    set "HOUDINI_FULL_VER=21.0.631"
     set "HOUDINI_VER=%HOUDINI_FULL_VER:~0,4%"
     set "COPY_PDBS=false"
     set "PY_VER=3.11"
@@ -62,6 +63,13 @@ goto :init
         set "PY_VER_INT=311"
         set "EXCLUDED_PY_VERS=*cp37* *cp38* *cp39* *cp310* *python*3*7* *python*3*8* *python*3*9* *python*3*10*"
         set "HDK_PACKAGE_VER=20.5.332"
+        set "USD_FLAVOR=houdini-24_03"
+    ) else if %HOUDINI_VER% == 21.0 (
+        set "PY_VER=3.11"
+        set "PY_VER_INT=311"
+        set "EXCLUDED_PY_VERS=*cp37* *cp38* *cp39* *cp310* *python*3*7* *python*3*8* *python*3*9* *python*3*10*"
+        set "HDK_PACKAGE_VER=21.0.631"
+        @REM set "USD_FLAVOR=houdini-25_05"
         set "USD_FLAVOR=houdini-24_03"
     )
 

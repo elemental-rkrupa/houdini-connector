@@ -15,8 +15,10 @@
 #include "HoudiniOmniResultTypes.h"
 #include "HoudiniOmniUtils.h"
 
+#include <FS/FS_WriterStream.h>
 #include <UT/UT_DirUtil.h>
 #include <fstream>
+#include <iostream>
 
 using namespace std;
 
@@ -32,8 +34,9 @@ namespace
 class FS_OmniWriterStream : public FS_WriterStream
 {
 public:
-    FS_OmniWriterStream(const string& omniPath, const char* cachePath) : FS_WriterStream(cachePath), m_omniPath(omniPath)
+    FS_OmniWriterStream(const string& omniPath, const char* cachePath) : FS_WriterStream(), m_omniPath(omniPath)
     {
+        init(cachePath);
     }
 
     ~FS_OmniWriterStream()
