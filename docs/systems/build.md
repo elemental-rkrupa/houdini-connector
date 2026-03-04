@@ -24,7 +24,7 @@ copied into `houdini-connector`'s staging folder.
 cd C:\Users\rober\Documents\GitHub\usd-resolver
 
 :: Full build (generates project files + compiles)
-repo build --usd-flavor houdini --usd-ver 25.05 --python-ver 3.11
+repo build --usd-flavor houdini-24_03 --usd-ver 25.05 --python-ver 3.11
 
 :: Rebuild without regenerating project files (faster, use after source-only changes)
 "C:\Program Files\Microsoft Visual Studio\2022\Community\MSBuild\Current\Bin\MSBuild.exe" ^
@@ -34,6 +34,11 @@ repo build --usd-flavor houdini --usd-ver 25.05 --python-ver 3.11
 
 > `repo build --rebuild` regenerates project files but does **not** do an MSBuild clean+rebuild.
 > Use the MSBuild `/t:Rebuild` command to force full recompilation without re-running premake.
+
+> **Note:** `repo build` reads USD headers from `deps/usd-deps.packman.xml`. In this repo that
+> file points to a **local path** (`C:\tmp\usd-resolver-deps\usd`) rather than a packman server.
+> If that path does not exist, extract the USD 25.05 headers from the Houdini 21.0 install and
+> create a symlink or copy at that location. See [Dependencies](#dependencies) table below.
 
 ### Build Output
 
@@ -53,6 +58,19 @@ repo build --usd-flavor houdini --usd-ver 25.05 --python-ver 3.11
 | `links` | `libpxr_boost`, `libpxr_python`, `libpxr_ar` | USD 25.05 requires explicit linking |
 | `defines` | `ARCH_OS_WINDOWS` | Belt-and-suspenders Windows branch selection |
 | `defines` | `MFB_ALT_PACKAGE_NAME=omni_usd_resolver` | Required for `.pxrctor` section emission |
+
+> **Machine-specific paths:** `premake5.lua` has a hard-coded Houdini install path
+> (`C:/Program Files/Side Effects Software/Houdini 21.0.631/`) and `repo.toml` has a hard-coded
+> VS2022 path. These must be updated when building on a different machine or Houdini version.
+> Similarly, `deps/usd-deps.packman.xml` points to a local `C:\tmp\usd-resolver-deps\usd` path.
+> Both files are tracked in git, so changes show as diffs — update them locally but do not commit
+> other developers' machine paths.
+
+> **`_compiler/` is gitignored:** The generated `.sln` and `.vcxproj` files live in
+> `_compiler/vs2022/` which is not tracked. After adding or removing `.cpp`/`.c` files from
+> `source/`, run `repo build` (or `premake5`) to regenerate project files. Do not manually edit
+> the `.vcxproj` for anything other than a temporary local workaround — the edit will be lost on
+> the next premake run.
 
 ### Dependencies
 

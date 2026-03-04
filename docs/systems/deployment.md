@@ -158,6 +158,13 @@ batch, hython). This is the right place for resolver election because:
 - It runs in hython, making automated tests reliable
 - `Ar.GetResolver()` eagerly instantiates the singleton
 
+> **Source control gap:** `ready.py` lives only in `_staging/houdini21.0/houdini/python3.11libs/`
+> which is gitignored. It is **not** tracked in the `python/python_libs/` source tree. This means
+> a fresh clone does not include it. It should either be added to a tracked location (e.g.
+> `python/python3.11libs/ready.py` in source, then copied to staging by the build) or checked in
+> directly to `package/` or an `assets/` directory. Until then, the staging copy must be preserved
+> manually.
+
 ---
 
 ## `plugInfo.json` — USD Plugin Registry
@@ -199,3 +206,47 @@ hython_launcher.bat --hver 21.0.631 -- --check_omni_plugin
 ```
 
 See [testing.md](testing.md) for the full test suite.
+
+---
+
+## `houdini.env` Coexistence
+
+The Houdini package file (`omniverse.json`) and the artist's personal `houdini.env` are both
+applied at startup and do not conflict. The package system handles all Omniverse-specific paths;
+`houdini.env` is for studio-level additions (HDAs, VEX paths, etc.).
+
+**Example coexistence** — typical artist `houdini.env` alongside the package:
+
+```ini
+# Studio HDAs (unrelated to Omniverse)
+HOUDINI_PATH = G:/Shared drives/.../houdini/hda;&
+HOUDINI_OTLSCAN_PATH = G:/Shared drives/.../houdini/hda;&
+HOUDINI_VEX_PATH = G:/Shared drives/.../houdini/vex;&
+
+# USD/Omniverse debug logging (uncomment to enable)
+# TF_DEBUG = AR_RESOLVER_INIT PLUG_LOAD PLUG_INFO_SEARCH
+```
+
+`HOUDINI_PATH` in `houdini.env` uses `&` as the sentinel for the default Houdini path, so the
+package's `hpath` contribution is still honoured.
+
+### TF_DEBUG — USD Debug Logging
+
+Adding `TF_DEBUG` to `houdini.env` is the recommended way to enable verbose USD resolver
+logging without modifying any repo files. Useful tokens:
+
+| Token | What it logs |
+|-------|-------------|
+| `AR_RESOLVER_INIT` | Which resolver is elected as primary |
+| `PLUG_LOAD` | Each plugin DLL as it loads |
+| `PLUG_INFO_SEARCH` | Where `Plug` searches for `plugInfo.json` |
+
+To toggle, comment/uncomment the line in `houdini.env` — no Houdini restart required between
+edits (the file is re-read at each launch).
+
+To enable for a single hython test run without editing `houdini.env`, use:
+
+```bat
+set TF_DEBUG=AR_RESOLVER_INIT PLUG_LOAD
+hython_launcher.bat --hver 21.0.631 -- --check_omni_plugin
+```
