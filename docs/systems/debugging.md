@@ -7,7 +7,7 @@
 **Option B implemented — factory registered via standard C++ static initialiser.**
 
 `TF_REGISTRY_FUNCTION` still does not fire (`.pxrctor` PE section absent from DLL), but the
-factory is now registered in `_DebugInit::_DebugInit()` — a standard C++ static initialiser
+factory is now registered in `_ResolverRegistration::_ResolverRegistration()` — a standard C++ static initialiser
 that runs reliably at DLL load. `OmniUsdResolver` is elected as primary resolver and `omniverse://`
 paths resolve correctly via Nucleus.
 
@@ -33,65 +33,6 @@ The `.pxrctor` PE section mechanism (`ARCH_CONSTRUCTOR` / `TF_REGISTRY_FUNCTION`
 entries in our build. Root cause unknown — both `MFB_ALT_PACKAGE_NAME` and `ARCH_OS_WINDOWS`
 are confirmed in the `.vcxproj`. The Option B workaround (standard C++ static init) is the
 permanent solution — it is simpler and equally correct.
-
----
-
-## Recommended Next Steps (in priority order)
-
-### Option A — Inspect preprocessed output
-
-Verify what `arch/attributes.h` is actually doing with `ARCH_CONSTRUCTOR` in our build context:
-
-```bat
-cd C:\Users\rober\Documents\GitHub\usd-resolver\_compiler\vs2022
-
-:: Run MSVC preprocessor on the source file
-cl /P /showIncludes ^
-  /I"C:/tmp/usd-resolver-deps/usd/include" ^
-  /I"C:/Program Files/Side Effects Software/Houdini 21.0.631/toolkit/include" ^
-  /DARCH_OS_WINDOWS /DMFB_ALT_PACKAGE_NAME=omni_usd_resolver ^
-  "...\source\library\OmniUsdResolver_Ar2.cpp"
-```
-
-In the `.i` output file, search for:
-- `#pragma section(".pxrctor"`
-- `__declspec(allocate(".pxrctor"))`
-
-If absent, the `ARCH_CONSTRUCTOR` macro is expanding incorrectly or the wrong `attributes.h`
-is being included.
-
-### Option B — Bypass `TF_REGISTRY_FUNCTION` with a standard static initialiser (fastest to unblock)
-
-The `_DebugInit` static struct in `OmniUsdResolver_Ar2.cpp` is confirmed to run correctly.
-Register the factory there instead of relying on `.pxrctor`:
-
-```cpp
-namespace {
-struct _FactoryInit {
-    _FactoryInit() {
-        TfType::Define<OmniUsdResolver, TfType::Bases<ArResolver>>()
-            .SetFactory<Ar_ResolverFactory<OmniUsdResolver>>();
-        fprintf(stderr, "OmniUsdResolver factory registered via static init\n");
-        fflush(stderr);
-    }
-} _factoryInit;
-}
-```
-
-This sidesteps the entire `.pxrctor` mechanism. USD's `TF_REGISTRY_FUNCTION` is just
-USD's preferred registration pattern — there is no functional requirement to use it.
-
-### Option C — Inspect `arch/api.h`
-
-Verify `ARCH_API` on `Arch_ConstructorInit` expands to `__declspec(dllimport)` in our context:
-
-```bat
-type "C:\tmp\usd-resolver-deps\usd\include\pxr\base\arch\api.h"
-```
-
-If `ARCH_API` resolves to `__declspec(dllexport)` (wrong direction), `Arch_ConstructorInit`
-would be compiled locally rather than imported from `libpxr_arch.dll`, and the `.pxrctor`
-scan would never run.
 
 ---
 
@@ -188,7 +129,9 @@ TF_DEBUG = AR_RESOLVER_INIT PLUG_LOAD PLUG_INFO_SEARCH
    `AR_RESOLVER_INIT` log confirms `ready.py` runs in time. Factory registration is where it fails.
 
 5. **`dynamic_cast` across DLL boundaries silently returns null when `type_info` is per-DLL.**
-   Fix: `template class __declspec(dllimport) Ar_ResolverFactory<OmniUsdResolver>`.
+   Fix: `#pragma comment(linker, "/INCLUDE:...Ar_ResolverFactoryBase...")` forces import of
+   `Ar_ResolverFactoryBase` vtable/type_info from `libpxr_ar.dll`. `Ar_ResolverFactory<T>` is
+   header-only and must be instantiated locally — do NOT use `__declspec(dllimport)` on it.
 
 6. **`MFB_ALT_PACKAGE_NAME` undefined → no compile error, no `.pxrctor` section.**
    The factory is never registered. Hardest failure to diagnose in the chain.
@@ -197,11 +140,8 @@ TF_DEBUG = AR_RESOLVER_INIT PLUG_LOAD PLUG_INFO_SEARCH
    Standard static objects work fine. `TF_REGISTRY_FUNCTION` uses a different PE section path.
    One working tells you nothing about the other.
 
-8. **`__try/__except` requires a `.c` file on MSVC.**
-   MSVC C2712: SEH cannot coexist with C++ RAII. Put SEH code in `DebugTest.c`, call via `extern "C"`.
-
-9. **`repo build --rebuild` does not clean MSBuild.**
+8. **`repo build --rebuild` does not clean MSBuild.**
    Use `MSBuild.exe ... /t:Rebuild` to force full recompilation.
 
-10. **Check `.pxrctor` in `.obj`, not just the DLL.**
-    Absent from `.obj` → macro expansion problem. Absent from DLL but present in `.obj` → linker stripping.
+9. **Check `.pxrctor` in `.obj`, not just the DLL.**
+   Absent from `.obj` → macro expansion problem. Absent from DLL but present in `.obj` → linker stripping.

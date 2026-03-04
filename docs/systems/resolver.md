@@ -91,7 +91,6 @@ When USD encounters `omniverse://nucleus.server/assets/cube.usd`:
 |------|------|
 | [source/library/OmniUsdResolver_Ar2.h](../../usd-resolver/source/library/OmniUsdResolver_Ar2.h) | Class declaration — `OMNIUSDRESOLVER_EXPORT_CPP` required for vtable export |
 | [source/library/OmniUsdResolver_Ar2.cpp](../../usd-resolver/source/library/OmniUsdResolver_Ar2.cpp) | Registration, constructor, resolver method implementations |
-| [source/library/DebugTest.c](../../usd-resolver/source/library/DebugTest.c) | SEH-safe `TryInstantiate()` — `.c` file required to avoid MSVC C2712 |
 | [source/library/plugInfo-windows.json](../../usd-resolver/source/library/plugInfo-windows.json) | USD plugin registry entry for Windows |
 | [include/Defines.h](../../usd-resolver/include/Defines.h) | `OMNIUSDRESOLVER_EXPORT_CPP` macro (`__declspec(dllexport)` on Windows) |
 | [premake5.lua](../../usd-resolver/premake5.lua) | Build configuration — libs, defines, paths |
@@ -115,9 +114,9 @@ For the resolver to be instantiated, four things must all succeed in order:
 ```
 
 Steps 2 and 3 are normally triggered by the `AR_DEFINE_RESOLVER` macro, which expands to
-`TF_REGISTRY_FUNCTION(TfType)`. In our build, the macro was replaced with an explicit
-`TF_REGISTRY_FUNCTION` body for debugging — but both rely on the same underlying
-`.pxrctor` PE section mechanism (see Windows DLL issue #3 below).
+`TF_REGISTRY_FUNCTION(TfType)`. In our build, the `.pxrctor` PE section mechanism that macro
+relies on does not emit entries, so a standard C++ static initialiser (`_ResolverRegistration`)
+performs the same `TfType::Define<>().SetFactory<>()` call instead (see issue #3 below).
 
 ---
 
@@ -145,12 +144,12 @@ the class vtable is explicitly imported. `Ar_ResolverFactoryBase` has `AR_API` o
 individual methods (not the class declaration), so each DLL compiles its own local vtable and
 `type_info`. The cast compares pointers from different DLLs and silently returns null.
 
-Fix — force use of Houdini's vtable/type_info:
+Fix — force import of `Ar_ResolverFactoryBase` vtable/type_info from `libpxr_ar.dll`.
+`Ar_ResolverFactory<T>` is a header-only template and must be instantiated locally;
+`Ar_ResolverFactoryBase` has `AR_API` so its identity comes from `libpxr_ar.dll` automatically.
+A linker `/INCLUDE` directive pulls in the destructor symbol which drags the vtable along:
 
 ```cpp
-extern template class __declspec(dllimport) Ar_ResolverFactory<OmniUsdResolver>;
-template class __declspec(dllimport) Ar_ResolverFactory<OmniUsdResolver>;
-
 #pragma comment(linker, \
   "/INCLUDE:??1Ar_ResolverFactoryBase@pxrInternal_v0_25_5__pxrReserved__@@UEAA@XZ")
 ```
@@ -177,8 +176,9 @@ filter { "system:windows" }
 filter{}
 ```
 
-**Current status:** Resolved via Option B — factory registered in a standard C++ static initialiser
-(`_DebugInit` struct) instead of relying on `.pxrctor`. See [debugging.md](debugging.md) for full history.
+**Current status:** Resolved — factory registered in `_ResolverRegistration` (standard C++ static
+initialiser) instead of relying on `.pxrctor`. Both required defines are present in `premake5.lua`.
+See [debugging.md](debugging.md) for full history.
 
 ### 4. `uriSchemes` in `plugInfo.json` disqualifies primary resolver
 
