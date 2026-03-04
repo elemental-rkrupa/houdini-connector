@@ -1,0 +1,64 @@
+{
+    "enable" : "houdini_version >= '21.0' and houdini_version < '22.0' and ${HOMNI_DISABLE_PACKAGE-0} != '1'",
+
+    "env" : [
+        {
+            "HOMNI" : "C:/OmniverseConnector/houdini21.0"
+        },
+        {
+            "OMNI_ROOT" : "${HOMNI}/omni"
+        },
+        {
+            "CARB_APP_PATH" : "${OMNI_ROOT}"
+        },
+        {
+            "PYTHONPATH" : [
+                {
+                    "value" : "${OMNI_ROOT}/python",
+                    "method" : "prepend"
+                },
+                {
+                    "value" : "${OMNI_ROOT}/carb_sdk_plugins/bindings-python",
+                    "method" : "prepend"
+                },
+                {
+                    "value" : "${OMNI_ROOT}/omni_usd_resolver/bindings-python",
+                    "method" : "prepend"
+                },
+                {
+                    "value" : "${OMNI_ROOT}/omni_client_library/bindings-python",
+                    "method" : "prepend"
+                }
+            ]
+        },
+        {
+            "HOUDINI_USD_DSO_PATH" : {
+                "value" : "${OMNI_ROOT}/omni_usd_resolver/usd/omniverse/resolver/resources",
+                "method" : "prepend"
+            }
+        },
+        {
+            "PATH" : {
+                "value" : [
+                    {
+                        "houdini_os == 'windows'" : "${OMNI_ROOT}/lib",
+                        "method" : "prepend"
+                    },
+                    {
+                        "houdini_os == 'windows'" : "${OMNI_ROOT}/omni_usd_resolver",
+                        "method" : "prepend"
+                    },
+                    {
+                        "houdini_os == 'windows'" : "${OMNI_ROOT}/omni_client_library",
+                        "method" : "prepend"
+                    }
+                ]
+            }
+        },
+        {
+            "HOMNI_ENABLE_EXPERIMENTAL" : "1"
+        }
+    ],
+
+    "hpath" : "${HOMNI}/houdini"
+}

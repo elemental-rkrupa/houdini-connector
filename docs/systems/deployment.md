@@ -1,192 +1,201 @@
-# Deployment & Staging
+# Deployment
 
 ---
 
-## Staging Folder
+## Artist Installation
 
-The build system assembles everything into a single folder that artists install:
+### Prerequisites
+
+- Houdini 21.0 installed
+- The connector package (contents of `_staging/houdini21.0/`) copied to an install location
+
+### Step 1 — Copy the connector files
+
+Copy the full contents of `_staging/houdini21.0/` to a permanent location on the artist's machine.
+Recommended path (no admin rights required):
 
 ```
-houdini-connector/_staging/houdini21.0/
-├── houdini/                         ← copied to Houdini's user preferences dir
-│   ├── dso/
-│   │   ├── fs/FS_Omni.dll           ← filesystem handler for omniverse:// URLs
-│   │   └── OP_Omni.dll              ← Houdini operators
-│   ├── python3.11libs/
-│   │   ├── ready.py                 ← runs after HDAs load in all modes; elects + instantiates resolver
-│   │   └── homni/                   ← Python utility module
-│   ├── scripts/
-│   │   ├── 456.py                   ← runs on every scene load (interactive only)
-│   │   └── pythonrc.py              ← very early init, before HDAs load
-│   ├── otls/                        ← compiled HDAs (Houdini Digital Assets)
-│   ├── python_panels/               ← Omniverse UI panels
-│   ├── husdplugins/                 ← USD export pipeline hooks
-│   ├── presets/                     ← parameter presets
-│   ├── toolbar/omni.shelf           ← Omniverse shelf
-│   └── MainMenuCommon.xml           ← menu additions
-│
-└── omni/                            ← Omniverse SDK, stays alongside Houdini prefs
-    ├── omni_client_library/
-    │   └── omniclient.dll           ← Nucleus communication
-    ├── carb_sdk_plugins/            ← Carbonite framework
-    └── omni_usd_resolver/
-        ├── omni_usd_resolver.dll    ← USD ArResolver plugin (built from usd-resolver repo)
-        └── usd/omniverse/resolver/resources/plugInfo.json  ← USD plugin registry entry
+C:\OmniverseConnector\houdini21.0\
+├── houdini\
+└── omni\
 ```
 
----
+Any path works as long as it is stable (not deleted between sessions).
 
-## `houdini.env`
+### Step 2 — Install the Houdini package file
 
-**Path:** `_staging/houdini21.0/houdini.env`
+Copy [`package/omniverse.json`](../../package/omniverse.json) from this repo to the artist's
+Houdini preferences packages folder:
 
-Houdini reads this file at startup to set environment variables. Key entries:
-
-```ini
-# Tell USD where to find the resolver's plugInfo.json
-PXR_PLUGINPATH_NAME = <OMNI_ROOT>/omni_usd_resolver/usd
-
-# Enable verbose USD plugin/resolver diagnostics (remove for production)
-TF_DEBUG = AR_RESOLVER_INIT PLUG_LOAD PLUG_INFO_SEARCH
-
-# Nucleus connection panel — leave empty so no TCP connection on startup
-HOMNI_DEFAULT_CONNECTIONS =
+```
+%USERPROFILE%\Documents\houdini21.0\packages\omniverse.json
 ```
 
-`<OMNI_ROOT>` is expanded by the launcher before Houdini starts.
+Create the `packages` folder if it does not exist.
 
-> **Important:** `HOMNI_DEFAULT_CONNECTIONS` must be empty or unset. If it names a Nucleus
-> server that is unreachable, `FS_Omni.dll` will block the UI thread on TCP connect at startup,
-> hanging Houdini's file browser (Problem 5).
+### Step 3 — Set the install path
 
----
-
-## `houdini_launcher.bat`
-
-The launcher sets up the environment and starts Houdini. Key responsibilities:
-
-### PATH setup
-
-```bat
-set PATH=%OMNI_ROOT%\lib;%OMNI_ROOT%\omni_usd_resolver;%OMNI_ROOT%\omni_client_library;%HOUDINI_BIN%;%PATH%
-```
-
-`%HOUDINI_BIN%` must be on PATH so Windows' DLL loader can find Houdini's `libpxr_*.dll`
-files when loading our DLL. Without it, transitive DLL dependencies fail at load time with
-"The specified module could not be found."
-
-### Version selection
-
-```bat
-houdini_launcher.bat --hver 21.0.631
-```
-
-`parse_args.bat` maps this to the correct Python version, staging folder path, and USD flavor.
-
----
-
-## `plugInfo.json` (resolver)
-
-**Path:** `_staging/houdini21.0/omni/omni_usd_resolver/usd/omniverse/resolver/resources/plugInfo.json`
-
-USD discovers this file via `HOUDINI_USD_DSO_PATH`, which the launcher sets to:
-```bat
-set HOUDINI_USD_DSO_PATH=%OMNI_ROOT%\omni_usd_resolver\usd\omniverse\resolver\resources
-```
-
-USD's `Plug` library reads this to know about the resolver plugin:
+Open the copied `omniverse.json` and update the `HOMNI` value to match your install location
+from Step 1:
 
 ```json
 {
-    "Plugins": [{
-        "Name": "Omniverse USD Plugin",
-        "Type": "library",
-        "Root": "..",
-        "ResourcePath": "resources",
-        "LibraryPath": "../../../omni_usd_resolver.dll",
-        "Info": {
-            "Types": {
-                "OmniUsdResolver": {
-                    "bases": [ "ArResolver" ],
-                    "implementsContexts": true,
-                    "implementsScopedCaches": true
-                },
-                "OmniUsdWrapperFileFormat": {
-                    "bases": [ "SdfFileFormat" ],
-                    "extensions": [ "omniabc" ],
-                    "formatId": "omniabc",
-                    "primary": true,
-                    "target": "usd"
-                }
-            }
-        }
-    }]
+    "HOMNI" : "C:/OmniverseConnector/houdini21.0"
 }
 ```
 
-`LibraryPath` is relative to `Root` (`..` from the resources folder), resolving to
-`omni_usd_resolver/omni_usd_resolver.dll`.
+Use forward slashes. The rest of the file derives all paths from `HOMNI` — nothing else needs
+to change.
 
-> **Do not add `uriSchemes` here.** Its presence permanently disqualifies the resolver from
-> being elected as primary — it becomes a URI-only resolver (Problem 9).
+### Step 4 — Verify
+
+Launch Houdini 21.0. In the Python console:
+
+```python
+from pxr import Plug
+for p in Plug.Registry().GetAllPlugins():
+    if "omni" in p.name.lower():
+        print(p.name, "isLoaded =", p.isLoaded)
+```
+
+Expected output:
+```
+Omniverse USD Plugin isLoaded = True
+```
+
+Alternatively, run the test suite from the repo root:
+```bat
+hython_launcher.bat --hver 21.0.631 -- --check_omni_plugin
+```
 
 ---
 
-## `ready.py` — Preferred Resolver Election
+## Package File Reference
 
-**Path:** `_staging/houdini21.0/houdini/python3.11libs/ready.py`
+**File:** [`package/omniverse.json`](../../package/omniverse.json)
+
+The package file uses Houdini's [package system](https://www.sidefx.com/docs/houdini/ref/plugins.html)
+to inject the connector's environment into Houdini at startup.
+
+### What it does
+
+| Key | Effect |
+|-----|--------|
+| `enable` | Loads only for Houdini 21.x; skipped if `HOMNI_DISABLE_PACKAGE=1` |
+| `hpath` | Prepends `$HOMNI/houdini` to `HOUDINI_PATH` — loads DSOs, HDAs, scripts, panels |
+| `OMNI_ROOT` | Points to the Omniverse SDK directory |
+| `CARB_APP_PATH` | Required by the Carbonite plugin framework |
+| `PYTHONPATH` | Adds Omniverse Python bindings so `import omni.client` works |
+| `HOUDINI_USD_DSO_PATH` | Tells USD's Plug library where to find `plugInfo.json` |
+| `PATH` (Windows) | Adds DLL directories so Windows finds `omniclient.dll` etc. at load time |
+| `HOMNI_ENABLE_EXPERIMENTAL` | Shows experimental nodes (live sync, etc.) |
+
+### Key differences from the Houdini 20.5 package
+
+The `HOUDINI_USD_DSO_PATH` resolver resources path changed between versions:
+
+| Version | Path |
+|---------|------|
+| 20.5 | `${OMNI_ROOT}/omni_usd_resolver/usd/omniverse/resources` |
+| 21.0 | `${OMNI_ROOT}/omni_usd_resolver/usd/omniverse/resolver/resources` |
+
+---
+
+## Connector Layout
+
+What the `_staging/houdini21.0/` directory contains:
+
+```
+houdini21.0/
+├── houdini/                              ← added to HOUDINI_PATH
+│   ├── dso/
+│   │   ├── OP_Omni.dll                  ← Houdini LOP/SOP operator nodes
+│   │   └── fs/FS_Omni.dll               ← filesystem handler for omniverse:// URLs
+│   ├── python3.11libs/
+│   │   ├── ready.py                     ← elects OmniUsdResolver as primary (all modes)
+│   │   ├── pythonrc.py                  ← early init: auth dialog, expression globals
+│   │   └── homni/                       ← Python utility module (logging, UI, utils)
+│   ├── scripts/
+│   │   └── afterscenesave.py            ← auto-checkpoint on scene save
+│   ├── otls/                            ← Houdini Digital Assets (HDAs)
+│   ├── husdplugins/outputprocessors/    ← USD export pipeline hooks
+│   ├── python_panels/                   ← Omniverse browser UI panel
+│   ├── presets/                         ← parameter presets
+│   ├── toolbar/omni.shelf               ← Omniverse shelf tools
+│   ├── config/Icons/                    ← toolbar and node icons
+│   └── MainMenuCommon.xml               ← Omniverse menu entries
+│
+└── omni/                                ← Omniverse SDK (OMNI_ROOT)
+    ├── lib/HoudiniOmni.dll              ← core integration library
+    ├── python/                          ← homni Python bindings
+    ├── carb_sdk_plugins/                ← Carbonite framework
+    │   └── bindings-python/             ← Python bindings for carb modules
+    ├── omni_client_library/
+    │   ├── omniclient.dll               ← Nucleus communication
+    │   └── bindings-python/             ← Python bindings for omni.client
+    └── omni_usd_resolver/
+        ├── omni_usd_resolver.dll        ← USD ArResolver plugin
+        ├── bindings-python/             ← Python bindings for omni.usd_resolver
+        └── usd/omniverse/resolver/resources/plugInfo.json
+```
+
+---
+
+## `ready.py` — Resolver Election
+
+**Path:** `houdini/python3.11libs/ready.py`
 
 ```python
 from pxr import Ar
-print("ready.py: Setting preferred resolver")
 Ar.SetPreferredResolver("OmniUsdResolver")
 Ar.GetResolver()
 ```
 
-Houdini runs `python3.11libs/ready.py` after all HDAs load in **all modes** — interactive,
-batch, and hython. This is the correct location for resolver election because:
+Houdini runs `python3.11libs/ready.py` after all HDAs load in **all modes** (interactive,
+batch, hython). This is the right place for resolver election because:
 
-- The resolver is elected **before** any scene file opens (no per-scene-load timing risk)
-- It runs in **hython** sessions, making automated tests reliable
-- `Ar.GetResolver()` eagerly instantiates the singleton so the resolver type is fixed at startup
-
-The `AR_RESOLVER_INIT` debug log line `Using preferred resolver OmniUsdResolver` confirms
-`SetPreferredResolver` runs in time. The failure in Phase 2 was not a timing issue —
-the factory simply was not registered (Problem 10, Problem 13).
-
-`456.py` (in `scripts/`) previously held this call but runs only in interactive Houdini
-on scene load — too late and absent in hython.
+- It runs before any scene file opens
+- It runs in hython, making automated tests reliable
+- `Ar.GetResolver()` eagerly instantiates the singleton
 
 ---
 
-## End-to-End Deployment Checklist
+## `plugInfo.json` — USD Plugin Registry
 
-1. Build `usd-resolver`:
-   ```bat
-   cd C:\Users\rober\Documents\GitHub\usd-resolver
-   repo build --usd-flavor houdini --usd-ver 25.05 --python-ver 3.11
-   ```
+**Path:** `omni/omni_usd_resolver/usd/omniverse/resolver/resources/plugInfo.json`
 
-2. Copy resolver DLL to staging:
-   ```bat
-   copy /Y "...\usd-resolver\_build\windows-x86_64\release\omni_usd_resolver.dll" ^
-     "...\houdini-connector\_staging\houdini21.0\omni\omni_usd_resolver\omni_usd_resolver.dll"
-   ```
+USD's `Plug` library discovers this via `HOUDINI_USD_DSO_PATH` and uses it to locate and
+load `omni_usd_resolver.dll`. The `LibraryPath` is relative to the plugin root:
 
-3. Build `houdini-connector`:
-   ```bat
-   cd C:\Users\rober\Documents\GitHub\houdini-connector
-   build_win64.bat
-   ```
+```json
+"LibraryPath": "../../../omni_usd_resolver.dll"
+```
 
-4. Launch Houdini:
-   ```bat
-   houdini_launcher.bat --hver 21.0.631
-   ```
+> **Do not add `uriSchemes`** to the `OmniUsdResolver` entry. Its presence permanently
+> disqualifies the resolver from being elected as primary resolver.
 
-5. Verify in Houdini Python console:
-   ```python
-   from pxr import Plug
-   reg = Plug.Registry()
-   # OmniUsdResolver  isLoaded = True   ← target state
-   ```
+---
+
+## Developer Build & Deploy
+
+After modifying `usd-resolver`, rebuild and deploy to staging:
+
+```bash
+# 1. Rebuild the resolver DLL
+MSYS_NO_PATHCONV=1 "/c/Program Files/Microsoft Visual Studio/2022/Community/MSBuild/Current/Bin/MSBuild.exe" \
+  "C:\\Users\\rober\\Documents\\GitHub\\usd-resolver\\_compiler\\vs2022\\OmniUsdResolver.sln" \
+  /p:Configuration=release /p:Platform=x64 /t:Rebuild /verbosity:minimal
+
+# 2. Deploy to staging
+cp "_build/windows-x86_64/release/omni_usd_resolver.dll" \
+   "../houdini-connector/_staging/houdini21.0/omni/omni_usd_resolver/omni_usd_resolver.dll"
+```
+
+Then test via the headless launcher:
+
+```bat
+hython_launcher.bat --hver 21.0.631 -- --check_resolver_type
+hython_launcher.bat --hver 21.0.631 -- --check_omni_plugin
+```
+
+See [testing.md](testing.md) for the full test suite.
