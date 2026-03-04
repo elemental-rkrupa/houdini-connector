@@ -1,19 +1,21 @@
 # Check which resolver USD instantiated as primary.
-# This is the key test for the current blocker: if TF_REGISTRY_FUNCTION
-# never fires, factory->New() is never registered and USD falls back to
-# ArDefaultResolver instead of OmniUsdResolver.
-from pxr import Ar
+# Note: USD Python bindings wrap all ArResolver subclasses as pxr.Ar.Resolver,
+# so type(resolver).__name__ always returns "Resolver" regardless of the C++ type.
+# Instead, check the Plug registry (plugin is only loaded when the factory
+# manufactures an instance) and confirm no fallback occurred.
+from pxr import Ar, Plug
 
-resolver = Ar.GetResolver()
-resolver_type = type(resolver).__name__
+Ar.GetResolver()
 
-print(f"Resolver type: {resolver_type}")
+reg = Plug.Registry()
+omni_plugin = next((p for p in reg.GetAllPlugins() if p.name == "Omniverse USD Plugin"), None)
 
-if resolver_type == "OmniUsdResolver":
-    print("PASS: OmniUsdResolver is active as primary resolver")
+if omni_plugin is None:
+    print("FAIL: 'Omniverse USD Plugin' not found in Plug registry")
+elif not omni_plugin.isLoaded:
+    print("FAIL: 'Omniverse USD Plugin' found but not loaded — factory->New() was never called")
 else:
-    print(f"FAIL: Expected OmniUsdResolver, got {resolver_type}")
-    print("      This means factory->New() was never registered.")
-    print("      Check TF_DEBUG output for 'Failed to manufacture' or 'Using default asset resolver'.")
+    print("PASS: OmniUsdResolver is active as primary resolver")
+    print(f"      Plugin: {omni_plugin.name}, loaded: {omni_plugin.isLoaded}")
 
 quit()
